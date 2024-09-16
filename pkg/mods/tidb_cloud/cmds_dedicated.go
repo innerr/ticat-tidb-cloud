@@ -15,7 +15,7 @@ func SpecsList(
 	flow *model.ParsedCmds,
 	currCmdIdx int) (int, bool) {
 
-	host := env.GetRaw(EnvKeyApiAddr)
+	host := env.GetRaw(EnvKeyApiAddrLegacy)
 	client := NewRestApiClient(env, cc.Screen)
 	ty := strings.ToLower(argv.GetRaw("type"))
 	region := strings.ToLower(argv.GetRaw("region"))
@@ -47,7 +47,7 @@ func ClusterDedicatedCreate(
 	flow *model.ParsedCmds,
 	currCmdIdx int) (int, bool) {
 
-	host := env.GetRaw(EnvKeyApiAddr)
+	host := env.GetRaw(EnvKeyApiAddrLegacy)
 	client := NewRestApiClient(env, cc.Screen)
 	name := env.GetRaw(EnvKeyClusterName)
 	rootPwd := env.GetRaw(EnvKeyRootPwd)

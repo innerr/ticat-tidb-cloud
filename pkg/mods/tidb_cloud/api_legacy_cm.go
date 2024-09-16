@@ -81,7 +81,7 @@ func LegacyCreateDevCluster(
 	payload := LegacyCreateClusterReq{
 		Name:          name,
 		ClusterType:   "DEVELOPER",
-		CloudProvider: "AWS",
+		CloudProvider: cloudProvider,
 		Region:        cloudRegion,
 		Config: LegacyClusterConfig{
 			RootPassword: rootPwd,
