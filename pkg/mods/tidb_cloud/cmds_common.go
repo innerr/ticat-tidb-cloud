@@ -16,7 +16,7 @@ func ProjectSelectTheOnlyOne(
 	flow *model.ParsedCmds,
 	currCmdIdx int) (int, bool) {
 
-	host := env.GetRaw(EnvKeyApiAddr)
+	host := env.GetRaw(EnvKeyApiAddrLegacy)
 	client := NewRestApiClient(env, cc.Screen)
 	cmd := flow.Cmds[currCmdIdx]
 
@@ -46,7 +46,7 @@ func ProjectSelectByName(
 	flow *model.ParsedCmds,
 	currCmdIdx int) (int, bool) {
 
-	host := env.GetRaw(EnvKeyApiAddr)
+	host := env.GetRaw(EnvKeyApiAddrLegacy)
 	client := NewRestApiClient(env, cc.Screen)
 	str := argv.GetRaw("find-str")
 	cmd := flow.Cmds[currCmdIdx]
@@ -83,7 +83,7 @@ func ProjectsList(
 	flow *model.ParsedCmds,
 	currCmdIdx int) (int, bool) {
 
-	host := env.GetRaw(EnvKeyApiAddr)
+	host := env.GetRaw(EnvKeyApiAddrLegacy)
 	client := NewRestApiClient(env, cc.Screen)
 
 	projects := LegacyGetAllProjects(host, client, flow.Cmds[currCmdIdx])
@@ -114,7 +114,7 @@ func ClusterDelete(
 	flow *model.ParsedCmds,
 	currCmdIdx int) (int, bool) {
 
-	host := env.GetRaw(EnvKeyApiAddr)
+	host := env.GetRaw(EnvKeyApiAddrLegacy)
 	client := NewRestApiClient(env, cc.Screen)
 	id := env.GetUint64(EnvKeyClusterId)
 	cmd := flow.Cmds[currCmdIdx]
@@ -136,7 +136,7 @@ func ClusterWait(
 	flow *model.ParsedCmds,
 	currCmdIdx int) (int, bool) {
 
-	host := env.GetRaw(EnvKeyApiAddr)
+	host := env.GetRaw(EnvKeyApiAddrLegacy)
 	client := NewRestApiClient(env, cc.Screen)
 	id := env.GetUint64(EnvKeyClusterId)
 	interval := argv.GetInt("interval-secs")
@@ -167,7 +167,7 @@ func ClusterGet(
 	flow *model.ParsedCmds,
 	currCmdIdx int) (int, bool) {
 
-	host := env.GetRaw(EnvKeyApiAddr)
+	host := env.GetRaw(EnvKeyApiAddrLegacy)
 	client := NewRestApiClient(env, cc.Screen)
 	id := env.GetUint64(EnvKeyClusterId)
 	cmd := flow.Cmds[currCmdIdx]

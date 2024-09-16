@@ -10,11 +10,20 @@ func RegisterCmds(cmds *model.CmdTree) {
 			AddArg2Env(EnvKeyPubKey, "public-key").
 			AddArg("private-key", "", "private", "pri").
 			AddArg2Env(EnvKeyPriKey, "private-key").
-			AddArg("api-address", "", "api-addr").
-			AddArg2Env(EnvKeyApiAddr, "api-address").
 			AddEnvOp(EnvKeyPubKey, model.EnvOpTypeRead).
-			AddEnvOp(EnvKeyPriKey, model.EnvOpTypeRead).
-			AddEnvOp(EnvKeyApiAddr, model.EnvOpTypeRead)
+			AddEnvOp(EnvKeyPriKey, model.EnvOpTypeRead)
+	}
+
+	addApiAddrArgLegacy := func(cmd *model.Cmd) {
+		cmd.AddArg("api-address", "", "api-addr").
+			AddArg2Env(EnvKeyApiAddrLegacy, "api-address").
+			AddEnvOp(EnvKeyApiAddrLegacy, model.EnvOpTypeRead)
+	}
+
+	addApiAddrArgV1Beta1 := func(cmd *model.Cmd) {
+		cmd.AddArg("api-address", "", "api-addr").
+			AddArg2Env(EnvKeyApiAddrV1Beta1, "api-address").
+			AddEnvOp(EnvKeyApiAddrLegacy, model.EnvOpTypeRead)
 	}
 
 	addClusterIdArgs := func(cmd *model.Cmd) {
@@ -50,6 +59,7 @@ func RegisterCmds(cmds *model.CmdTree) {
 			"assume there is only one project and select it").
 		AddEnvOp(EnvKeyProject, model.EnvOpTypeWrite)
 	addAuthArgs(confPrj)
+	addApiAddrArgLegacy(confPrj)
 
 	confPrjByName := confPrj.AddSub("by-name", "name").
 		RegPowerCmd(ProjectSelectByName,
@@ -57,6 +67,7 @@ func RegisterCmds(cmds *model.CmdTree) {
 		AddArg("find-str", "", "name", "str").
 		AddEnvOp(EnvKeyProject, model.EnvOpTypeWrite)
 	addAuthArgs(confPrjByName)
+	addApiAddrArgLegacy(confPrjByName)
 
 	clusters := tc.AddSub(
 		"clusters", "cluster", "c").RegEmptyCmd(
@@ -67,12 +78,14 @@ func RegisterCmds(cmds *model.CmdTree) {
 			"get info of a cluster by id")
 	addAuthArgs(clusterGet)
 	addClusterIdArgs(clusterGet)
+	addApiAddrArgLegacy(clusterGet)
 
 	clusterDelete := clusters.AddSub("delete", "remove", "del", "rm").
 		RegPowerCmd(ClusterDelete,
 			"delete a cluster")
 	addAuthArgs(clusterDelete)
 	addClusterIdArgs(clusterDelete)
+	addApiAddrArgLegacy(clusterDelete)
 
 	clusterWait := clusters.AddSub("wait-status", "wait").
 		RegPowerCmd(ClusterWait,
@@ -85,6 +98,7 @@ func RegisterCmds(cmds *model.CmdTree) {
 		AddEnvOp("mysql.user", model.EnvOpTypeWrite)
 	addAuthArgs(clusterWait)
 	addClusterIdArgs(clusterWait)
+	addApiAddrArgLegacy(clusterWait)
 
 	serverless := tc.AddSub(
 		"serverless", "sl", "s").RegEmptyCmd(
@@ -94,7 +108,7 @@ func RegisterCmds(cmds *model.CmdTree) {
 		"tidb cloud serverless cluster service toolbox").Owner()
 
 	serverlessCreate := serverlessClusters.AddSub("create", "new", "c").
-		RegPowerCmd(ClusterServerlessCreate,
+		RegPowerCmd(V1Beta1ClusterServerlessCreate,
 			"create a serverless cluster").
 		AddArg("cluster-name", "", "name").
 		AddArg2Env(EnvKeyClusterName, "cluster-name").
@@ -114,6 +128,30 @@ func RegisterCmds(cmds *model.CmdTree) {
 		AddEnvOp(EnvKeyClusterId, model.EnvOpTypeWrite).
 		AddEnvOp("mysql.pwd", model.EnvOpTypeWrite)
 	addAuthArgs(serverlessCreate)
+	addApiAddrArgV1Beta1(serverlessCreate)
+
+	serverlessCreateLegacy := serverlessCreate.AddSub("legacy", "l").
+		RegPowerCmd(V1Beta1ClusterServerlessCreate,
+			"use legacy api to create a serverless cluster").
+		AddArg("cluster-name", "", "name").
+		AddArg2Env(EnvKeyClusterName, "cluster-name").
+		AddArg("project-id", "", "project", "pro", "prj").
+		AddArg2Env(EnvKeyProject, "project-id").
+		AddArg("root-password", "", "root-pwd", "password", "pwd").
+		AddArg2Env(EnvKeyRootPwd, "root-password").
+		AddArg("cloud-provider", "AWS", "provider").
+		AddArg2Env(EnvKeyCloudProvider, "cloud-provider").
+		AddArg("cloud-region", "us-east-1", "region").
+		AddArg2Env(EnvKeyCloudRegion, "cloud-region").
+		AddEnvOp(EnvKeyClusterName, model.EnvOpTypeRead).
+		AddEnvOp(EnvKeyRootPwd, model.EnvOpTypeRead).
+		AddEnvOp(EnvKeyCloudProvider, model.EnvOpTypeRead).
+		AddEnvOp(EnvKeyCloudRegion, model.EnvOpTypeRead).
+		AddEnvOp(EnvKeyProject, model.EnvOpTypeRead).
+		AddEnvOp(EnvKeyClusterId, model.EnvOpTypeWrite).
+		AddEnvOp("mysql.pwd", model.EnvOpTypeWrite)
+	addAuthArgs(serverlessCreateLegacy)
+	addApiAddrArgLegacy(serverlessCreateLegacy)
 
 	dedicated := tc.AddSub(
 		"dedicated", "dd", "d").RegEmptyCmd(
@@ -150,16 +188,18 @@ func RegisterCmds(cmds *model.CmdTree) {
 		AddEnvOp(EnvKeyClusterId, model.EnvOpTypeWrite).
 		AddEnvOp("mysql.pwd", model.EnvOpTypeWrite)
 	addAuthArgs(dedicatedCreate)
+	addApiAddrArgLegacy(dedicatedCreate)
 }
 
 const (
-	EnvKeyPubKey        = "tidb-cloud.auth.public-key"
-	EnvKeyPriKey        = "tidb-cloud.auth.private-key"
-	EnvKeyApiAddr       = "tidb-cloud.address.api"
-	EnvKeyClusterName   = "tidb-cloud.cluster.name"
-	EnvKeyRootPwd       = "tidb-cloud.cluster.root-pwd"
-	EnvKeyCloudProvider = "tidb-cloud.provider"
-	EnvKeyCloudRegion   = "tidb-cloud.provider.region"
-	EnvKeyProject       = "tidb-cloud.project"
-	EnvKeyClusterId     = "tidb-cloud.cluster.id"
+	EnvKeyPubKey         = "tidb-cloud.auth.public-key"
+	EnvKeyPriKey         = "tidb-cloud.auth.private-key"
+	EnvKeyApiAddrLegacy  = "tidb-cloud.address.api.legacy"
+	EnvKeyApiAddrV1Beta1 = "tidb-cloud.address.api.v1beta1"
+	EnvKeyClusterName    = "tidb-cloud.cluster.name"
+	EnvKeyRootPwd        = "tidb-cloud.cluster.root-pwd"
+	EnvKeyCloudProvider  = "tidb-cloud.provider"
+	EnvKeyCloudRegion    = "tidb-cloud.provider.region"
+	EnvKeyProject        = "tidb-cloud.project"
+	EnvKeyClusterId      = "tidb-cloud.cluster.id"
 )
