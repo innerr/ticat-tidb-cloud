@@ -21,7 +21,7 @@ func SpecsList(
 	region := strings.ToLower(argv.GetRaw("region"))
 	provider := strings.ToLower(argv.GetRaw("provider"))
 
-	specs := getSpecifications(host, client, flow.Cmds[currCmdIdx])
+	specs := LegacyGetSpecifications(host, client, flow.Cmds[currCmdIdx])
 	if cc.Screen.OutputtedLines() > 0 {
 		cc.Screen.Print("\n")
 	}
@@ -62,7 +62,7 @@ func ClusterDedicatedCreate(
 	cmd := flow.Cmds[currCmdIdx]
 
 	project := getProject(host, client, env, cc.Screen, cmd)
-	cluster := createDedicatedCluster(host, client, project, name, rootPwd, cloudProvider, region,
+	cluster := LegacyCreateDedicatedCluster(host, client, project, name, rootPwd, cloudProvider, region,
 		tidbNodeSize, tidbNodeCnt, tikvNodeSize, tikvNodeCnt, tikvStgGb, cidr, cmd)
 
 	if cc.Screen.OutputtedLines() > 0 {
@@ -78,64 +78,7 @@ func ClusterDedicatedCreate(
 	return currCmdIdx, true
 }
 
-func createDedicatedCluster(
-	host string,
-	client *RestApiClient,
-	projectID uint64,
-	name string,
-	rootPwd string,
-	cloudProvider string,
-	cloudRegion string,
-	tidbNodeSize string,
-	tidbNodeCnt int,
-	tikvNodeSize string,
-	tikvNodeCnt int,
-	tikvStgGb int,
-	cidr string,
-	cmd model.ParsedCmd) *CreateClusterResp {
-
-	payload := CreateClusterReq{
-		Name:          name,
-		ClusterType:   "DEDICATED",
-		CloudProvider: cloudProvider,
-		Region:        cloudRegion,
-		Config: ClusterConfig{
-			RootPassword: rootPwd,
-			Port:         4000,
-			Components: Components{
-				TiDB: &ComponentTiDB{
-					NodeSize:     tidbNodeSize,
-					NodeQuantity: int32(tidbNodeCnt),
-				},
-				TiKV: &ComponentTiKV{
-					NodeSize:       tikvNodeSize,
-					NodeQuantity:   int32(tikvNodeCnt),
-					StorageSizeGib: int32(tikvStgGb),
-				},
-			},
-			IPAccessList: []IPAccess{
-				{
-					CIDR:        cidr,
-					Description: cidr,
-				},
-			},
-		},
-	}
-
-	url := fmt.Sprintf("%s/api/v1beta/projects/%d/clusters", host, projectID)
-	var result CreateClusterResp
-	client.DoPOST(url, payload, &result, cmd)
-	return &result
-}
-
-func getSpecifications(host string, client *RestApiClient, cmd model.ParsedCmd) *GetSpecificationsResp {
-	url := fmt.Sprintf("%s/api/v1beta/clusters/provider/regions", host)
-	var result GetSpecificationsResp
-	client.DoGET(url, nil, &result, cmd)
-	return &result
-}
-
-func printSpec(env *model.Env, screen model.Screen, spec *Specification) {
+func printSpec(env *model.Env, screen model.Screen, spec *LegacySpecification) {
 	screen.Print(display.ColorHighLight(fmt.Sprintf("ClusterType: %v, Provider: %v, Region: %v\n",
 		spec.ClusterType, spec.CloudProvider, spec.Region), env))
 	prefix := "  "

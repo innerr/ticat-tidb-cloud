@@ -20,7 +20,7 @@ func ProjectSelectTheOnlyOne(
 	client := NewRestApiClient(env, cc.Screen)
 	cmd := flow.Cmds[currCmdIdx]
 
-	projects := getAllProjects(host, client, flow.Cmds[currCmdIdx])
+	projects := LegacyGetAllProjects(host, client, flow.Cmds[currCmdIdx])
 	if len(projects) == 0 {
 		msg := "no project found"
 		panic(model.NewCmdError(cmd, msg))
@@ -51,8 +51,8 @@ func ProjectSelectByName(
 	str := argv.GetRaw("find-str")
 	cmd := flow.Cmds[currCmdIdx]
 
-	all := getAllProjects(host, client, flow.Cmds[currCmdIdx])
-	var projects []Project
+	all := LegacyGetAllProjects(host, client, flow.Cmds[currCmdIdx])
+	var projects []LegacyProject
 	for _, it := range all {
 		if strings.Index(it.Name, str) >= 0 {
 			projects = append(projects, it)
@@ -86,7 +86,7 @@ func ProjectsList(
 	host := env.GetRaw(EnvKeyApiAddr)
 	client := NewRestApiClient(env, cc.Screen)
 
-	projects := getAllProjects(host, client, flow.Cmds[currCmdIdx])
+	projects := LegacyGetAllProjects(host, client, flow.Cmds[currCmdIdx])
 	if cc.Screen.OutputtedLines() > 0 {
 		cc.Screen.Print("\n")
 	}
@@ -120,7 +120,7 @@ func ClusterDelete(
 	cmd := flow.Cmds[currCmdIdx]
 
 	project := getProject(host, client, env, cc.Screen, cmd)
-	deleteClusterByID(host, client, project, id, cmd)
+	LegacyDeleteClusterByID(host, client, project, id, cmd)
 
 	if cc.Screen.OutputtedLines() > 0 {
 		cc.Screen.Print("\n")
@@ -173,7 +173,7 @@ func ClusterGet(
 	cmd := flow.Cmds[currCmdIdx]
 
 	project := getProject(host, client, env, cc.Screen, cmd)
-	cluster := getClusterByID(host, client, project, id, cmd)
+	cluster := LegacyGetClusterByID(host, client, project, id, cmd)
 
 	if cc.Screen.OutputtedLines() > 0 {
 		cc.Screen.Print("\n")
@@ -182,29 +182,24 @@ func ClusterGet(
 	return currCmdIdx, true
 }
 
-func getAllProjects(host string, client *RestApiClient, cmd model.ParsedCmd) []Project {
-	url := fmt.Sprintf("%s/api/v1beta/projects", host)
-	var result GetAllProjectsResp
-	client.DoGET(url, nil, &result, cmd)
-	return result.Items
-}
-
-func getClusterByID(host string, client *RestApiClient, project, cluster uint64, cmd model.ParsedCmd) *GetClusterResp {
-	url := fmt.Sprintf("%s/api/v1beta/projects/%d/clusters/%d", host, project, cluster)
-	var result GetClusterResp
-	client.DoGET(url, nil, &result, cmd)
-	return &result
-}
-
-func waitClusterStatus(host string, client *RestApiClient, project, clusterId uint64, intervalSecs, timeoutSecs int,
-	status string, env *model.Env, screen model.Screen, cmd model.ParsedCmd) (*GetClusterResp, bool) {
+func waitClusterStatus(
+	host string,
+	client *RestApiClient,
+	project uint64,
+	clusterId uint64,
+	intervalSecs int,
+	timeoutSecs int,
+	status string,
+	env *model.Env,
+	screen model.Screen,
+	cmd model.ParsedCmd) (*LegacyGetClusterResp, bool) {
 
 	deadline := time.Now().Add(time.Duration(timeoutSecs) * time.Second)
 	ticker := time.NewTicker(time.Duration(intervalSecs) * time.Second)
 	defer ticker.Stop()
-	var cluster *GetClusterResp
+	var cluster *LegacyGetClusterResp
 	for range ticker.C {
-		cluster = getClusterByID(host, client, project, clusterId, cmd)
+		cluster = LegacyGetClusterByID(host, client, project, clusterId, cmd)
 		if cluster.Status.ClusterStatus == status {
 			return cluster, true
 		}
@@ -216,15 +211,10 @@ func waitClusterStatus(host string, client *RestApiClient, project, clusterId ui
 	return cluster, false
 }
 
-func deleteClusterByID(host string, client *RestApiClient, projectID, clusterID uint64, cmd model.ParsedCmd) {
-	url := fmt.Sprintf("%s/api/v1beta/projects/%d/clusters/%d", host, projectID, clusterID)
-	client.DoDELETE(url, nil, nil, cmd)
-}
-
 func getProject(host string, client *RestApiClient, env *model.Env, screen model.Screen, cmd model.ParsedCmd) uint64 {
 	project := env.GetRaw(EnvKeyProject)
 	if len(project) == 0 {
-		projects := getAllProjects(host, client, cmd)
+		projects := LegacyGetAllProjects(host, client, cmd)
 		if len(projects) == 0 {
 			msg := "no project found"
 			panic(model.NewCmdError(cmd, msg))
@@ -238,7 +228,7 @@ func getProject(host string, client *RestApiClient, env *model.Env, screen model
 	return env.GetUint64(EnvKeyProject)
 }
 
-func printCluster(env *model.Env, screen model.Screen, cluster *GetClusterResp) {
+func printCluster(env *model.Env, screen model.Screen, cluster *LegacyGetClusterResp) {
 	prefix := "  "
 	screen.Print(display.ColorHighLight(fmt.Sprintf("ID: %v\n", cluster.ID), env))
 	printProp(env, screen, prefix, "Name", cluster.Name)
@@ -258,9 +248,11 @@ func printCluster(env *model.Env, screen model.Screen, cluster *GetClusterResp) 
 	printProp(env, screen, prefix, "Config.Components.TiKV.NodeSize", cluster.Config.Components.TiKV.NodeSize)
 	printProp(env, screen, prefix, "Config.Components.TiKV.StorageSizeGib", cluster.Config.Components.TiKV.StorageSizeGib)
 	printProp(env, screen, prefix, "Config.Components.TiKV.NodeQuantity", cluster.Config.Components.TiKV.NodeQuantity)
-	printProp(env, screen, prefix, "Config.Components.TiFlash.NodeSize", cluster.Config.Components.TiFlash.NodeSize)
-	printProp(env, screen, prefix, "Config.Components.TiFlash.StorageSizeGib", cluster.Config.Components.TiFlash.StorageSizeGib)
-	printProp(env, screen, prefix, "Config.Components.TiFlash.NodeQuantity", cluster.Config.Components.TiFlash.NodeQuantity)
+	if cluster.Config.Components.TiFlash != nil {
+		printProp(env, screen, prefix, "Config.Components.TiFlash.NodeSize", cluster.Config.Components.TiFlash.NodeSize)
+		printProp(env, screen, prefix, "Config.Components.TiFlash.StorageSizeGib", cluster.Config.Components.TiFlash.StorageSizeGib)
+		printProp(env, screen, prefix, "Config.Components.TiFlash.NodeQuantity", cluster.Config.Components.TiFlash.NodeQuantity)
+	}
 	printProp(env, screen, prefix, "Status.ConnectionStrings.DefaultUser", cluster.Status.ConnectionStrings.DefaultUser)
 	printProp(env, screen, prefix, "Status.ConnectionStrings.Standard.Host", cluster.Status.ConnectionStrings.Standard.Host)
 	printProp(env, screen, prefix, "Status.ConnectionStrings.Standard.Port", cluster.Status.ConnectionStrings.Standard.Port)
@@ -268,7 +260,7 @@ func printCluster(env *model.Env, screen model.Screen, cluster *GetClusterResp) 
 	printProp(env, screen, prefix, "Status.ConnectionStrings.VpcPeering.Port", cluster.Status.ConnectionStrings.VpcPeering.Port)
 }
 
-func printProject(env *model.Env, screen model.Screen, project *Project) {
+func printProject(env *model.Env, screen model.Screen, project *LegacyProject) {
 	prefix := "  "
 	screen.Print(display.ColorHighLight(fmt.Sprintf("ID: %v\n", project.ID), env))
 	printProp(env, screen, prefix, "Name", project.Name)

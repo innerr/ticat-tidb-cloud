@@ -77,8 +77,8 @@ func RegisterCmds(cmds *model.CmdTree) {
 	clusterWait := clusters.AddSub("wait-status", "wait").
 		RegPowerCmd(ClusterWait,
 			"wait for cluster to become the specify status (default: AVAILABLE)").
-		AddArg("interval-secs", "2", "interval").
-		AddArg("timeout-secs", "600", "timeout").
+		AddArg("interval-secs", "2", "interval", "interv").
+		AddArg("timeout-secs", "3600", "timeout").
 		AddArg("status", "AVAILABLE", "s").
 		AddEnvOp("mysql.host", model.EnvOpTypeWrite).
 		AddEnvOp("mysql.port", model.EnvOpTypeWrite).
@@ -134,11 +134,11 @@ func RegisterCmds(cmds *model.CmdTree) {
 		AddArg2Env(EnvKeyRootPwd, "root-password").
 		AddArg("cloud-provider", "AWS", "provider").
 		AddArg2Env(EnvKeyCloudProvider, "cloud-provider").
-		AddArg("cloud-region", "us-east-1", "region").
+		AddArg("cloud-region", "us-west-2", "region").
 		AddArg2Env(EnvKeyCloudRegion, "cloud-region").
-		AddArg("tidb-node-size", "4C16G", "tidb-size", "tidb", "db").
+		AddArg("tidb-node-size", "2C4G", "tidb-size", "tidb", "db").
 		AddArg("tidb-node-count", "1", "tidb-count", "tidb-cnt", "db-cnt").
-		AddArg("tikv-node-size", "4C16G", "tikv-size", "tikv", "kv").
+		AddArg("tikv-node-size", "2C4G", "tikv-size", "tikv", "kv").
 		AddArg("tikv-node-count", "3", "tikv-count", "tikv-cnt", "kv-cnt").
 		AddArg("tikv-storage-gb", "10", "tikv-storage", "tikv-gb", "tikv-stg", "kv-stg", "stg-gb", "stg", "gb").
 		AddArg("cidr", "172.16.0.0/21").

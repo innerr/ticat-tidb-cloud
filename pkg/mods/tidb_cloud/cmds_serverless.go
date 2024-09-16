@@ -23,7 +23,7 @@ func ClusterServerlessCreate(
 	cmd := flow.Cmds[currCmdIdx]
 
 	project := getProject(host, client, env, cc.Screen, cmd)
-	cluster := createDevCluster(host, client, project, name, rootPwd, cloudProvider, region, cmd)
+	cluster := LegacyCreateDevCluster(host, client, project, name, rootPwd, cloudProvider, region, cmd)
 
 	if cc.Screen.OutputtedLines() > 0 {
 		cc.Screen.Print("\n")
@@ -36,29 +36,4 @@ func ClusterServerlessCreate(
 	env.GetLayer(model.EnvLayerSession).SetUint64(EnvKeyClusterId, cluster.ClusterID)
 	env.GetLayer(model.EnvLayerSession).Set("mysql.pwd", rootPwd)
 	return currCmdIdx, true
-}
-
-func createDevCluster(host string, client *RestApiClient, projectID uint64, name string, rootPwd string,
-	cloudProvider string, cloudRegion string, cmd model.ParsedCmd) *CreateClusterResp {
-
-	payload := CreateClusterReq{
-		Name:          name,
-		ClusterType:   "DEVELOPER",
-		CloudProvider: "AWS",
-		Region:        cloudRegion,
-		Config: ClusterConfig{
-			RootPassword: rootPwd,
-			IPAccessList: []IPAccess{
-				{
-					CIDR:        "0.0.0.0/0",
-					Description: "allow access from anywhere",
-				},
-			},
-		},
-	}
-
-	url := fmt.Sprintf("%s/api/v1beta/projects/%d/clusters", host, projectID)
-	var result CreateClusterResp
-	client.DoPOST(url, payload, &result, cmd)
-	return &result
 }
