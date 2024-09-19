@@ -65,14 +65,14 @@ type LegacyCreateClusterReq struct {
 }
 
 type LegacyCreateClusterResp struct {
-	ClusterID uint64 `json:"id,string"`
+	ClusterId uint64 `json:"id,string"`
 	Message   string `json:"message"`
 }
 
 func LegacyCreateDevCluster(
 	host string,
 	client *RestApiClient,
-	projectID uint64,
+	projectId uint64,
 	name string,
 	rootPwd string,
 	cloudProvider string,
@@ -94,7 +94,7 @@ func LegacyCreateDevCluster(
 		},
 	}
 
-	url := fmt.Sprintf("%s/api/v1beta/projects/%d/clusters", host, projectID)
+	url := fmt.Sprintf("%s/api/v1beta/projects/%d/clusters", host, projectId)
 	var result LegacyCreateClusterResp
 	client.DoPOST(url, payload, &result, cmd)
 	return &result
@@ -103,7 +103,7 @@ func LegacyCreateDevCluster(
 func LegacyCreateDedicatedCluster(
 	host string,
 	client *RestApiClient,
-	projectID uint64,
+	projectId uint64,
 	name string,
 	rootPwd string,
 	cloudProvider string,
@@ -113,7 +113,7 @@ func LegacyCreateDedicatedCluster(
 	tikvNodeSize string,
 	tikvNodeCnt int,
 	tikvStgGb int,
-	cidr string,
+	accessCidr string,
 	cmd model.ParsedCmd) *LegacyCreateClusterResp {
 
 	payload := LegacyCreateClusterReq{
@@ -137,22 +137,22 @@ func LegacyCreateDedicatedCluster(
 			},
 			IPAccessList: []LegacyIPAccess{
 				{
-					CIDR:        cidr,
-					Description: cidr,
+					CIDR:        accessCidr,
+					Description: "accessable from " + accessCidr,
 				},
 			},
 		},
 	}
 
-	url := fmt.Sprintf("%s/api/v1beta/projects/%d/clusters", host, projectID)
+	url := fmt.Sprintf("%s/api/v1beta/projects/%d/clusters", host, projectId)
 	var result LegacyCreateClusterResp
 	client.DoPOST(url, payload, &result, cmd)
 	return &result
 }
 
 type LegacyGetClusterResp struct {
-	ID              uint64              `json:"id,string"`
-	ProjectID       uint64              `json:"project_id,string"`
+	Id              uint64              `json:"id,string"`
+	ProjectId       uint64              `json:"project_id,string"`
 	Name            string              `json:"name"`
 	ClusterType     string              `json:"cluster_type"`
 	CloudProvider   string              `json:"cloud_provider"`
@@ -162,14 +162,14 @@ type LegacyGetClusterResp struct {
 	Config          LegacyClusterConfig `json:"config"`
 }
 
-func LegacyGetClusterByID(host string, client *RestApiClient, project, cluster uint64, cmd model.ParsedCmd) *LegacyGetClusterResp {
+func LegacyGetClusterById(host string, client *RestApiClient, project, cluster uint64, cmd model.ParsedCmd) *LegacyGetClusterResp {
 	url := fmt.Sprintf("%s/api/v1beta/projects/%d/clusters/%d", host, project, cluster)
 	var result LegacyGetClusterResp
 	client.DoGET(url, nil, &result, cmd)
 	return &result
 }
 
-func LegacyDeleteClusterByID(host string, client *RestApiClient, projectID, clusterID uint64, cmd model.ParsedCmd) {
-	url := fmt.Sprintf("%s/api/v1beta/projects/%d/clusters/%d", host, projectID, clusterID)
+func LegacyDeleteClusterById(host string, client *RestApiClient, projectId, clusterId uint64, cmd model.ParsedCmd) {
+	url := fmt.Sprintf("%s/api/v1beta/projects/%d/clusters/%d", host, projectId, clusterId)
 	client.DoDELETE(url, nil, nil, cmd)
 }

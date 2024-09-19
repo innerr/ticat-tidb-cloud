@@ -7,8 +7,8 @@ import (
 )
 
 type LegacyProject struct {
-	ID              uint64 `json:"id,string"`
-	OrgID           uint64 `json:"orgId,string"`
+	Id              uint64 `json:"id,string"`
+	OrgId           uint64 `json:"orgId,string"`
 	Name            string `json:"name"`
 	ClusterCount    int64  `json:"clusterCount"`
 	UserCount       int64  `json:"userCount"`

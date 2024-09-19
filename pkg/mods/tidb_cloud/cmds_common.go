@@ -30,7 +30,7 @@ func ProjectSelectTheOnlyOne(
 		panic(model.NewCmdError(cmd, msg))
 	}
 	project := projects[0]
-	env.GetLayer(model.EnvLayerSession).SetUint64(EnvKeyProject, project.ID)
+	env.GetLayer(model.EnvLayerSession).SetUint64(EnvKeyProject, project.Id)
 
 	if cc.Screen.OutputtedLines() > 0 {
 		cc.Screen.Print("\n")
@@ -67,7 +67,7 @@ func ProjectSelectByName(
 		panic(model.NewCmdError(cmd, msg))
 	}
 	project := projects[0]
-	env.GetLayer(model.EnvLayerSession).SetUint64(EnvKeyProject, project.ID)
+	env.GetLayer(model.EnvLayerSession).SetUint64(EnvKeyProject, project.Id)
 
 	if cc.Screen.OutputtedLines() > 0 {
 		cc.Screen.Print("\n")
@@ -120,12 +120,12 @@ func ClusterDelete(
 	cmd := flow.Cmds[currCmdIdx]
 
 	project := getProject(host, client, env, cc.Screen, cmd)
-	LegacyDeleteClusterByID(host, client, project, id, cmd)
+	LegacyDeleteClusterById(host, client, project, id, cmd)
 
 	if cc.Screen.OutputtedLines() > 0 {
 		cc.Screen.Print("\n")
 	}
-	cc.Screen.Print(fmt.Sprintf("cluster deleted, ID: %v\n", id))
+	cc.Screen.Print(fmt.Sprintf("cluster deleted, Id: %v\n", id))
 	return currCmdIdx, true
 }
 
@@ -156,7 +156,7 @@ func ClusterWait(
 	envSession.Set("mysql.host", cluster.Status.ConnectionStrings.Standard.Host)
 	envSession.SetInt("mysql.port", cluster.Status.ConnectionStrings.Standard.Port)
 	envSession.Set("mysql.user", cluster.Status.ConnectionStrings.DefaultUser)
-	printCluster(env, cc.Screen, cluster)
+	legacyPrintCluster(env, cc.Screen, cluster)
 	return currCmdIdx, true
 }
 
@@ -173,12 +173,12 @@ func ClusterGet(
 	cmd := flow.Cmds[currCmdIdx]
 
 	project := getProject(host, client, env, cc.Screen, cmd)
-	cluster := LegacyGetClusterByID(host, client, project, id, cmd)
+	cluster := LegacyGetClusterById(host, client, project, id, cmd)
 
 	if cc.Screen.OutputtedLines() > 0 {
 		cc.Screen.Print("\n")
 	}
-	printCluster(env, cc.Screen, cluster)
+	legacyPrintCluster(env, cc.Screen, cluster)
 	return currCmdIdx, true
 }
 
@@ -199,7 +199,7 @@ func waitClusterStatus(
 	defer ticker.Stop()
 	var cluster *LegacyGetClusterResp
 	for range ticker.C {
-		cluster = LegacyGetClusterByID(host, client, project, clusterId, cmd)
+		cluster = LegacyGetClusterById(host, client, project, clusterId, cmd)
 		if cluster.Status.ClusterStatus == status {
 			return cluster, true
 		}
@@ -223,16 +223,16 @@ func getProject(host string, client *RestApiClient, env *model.Env, screen model
 			msg := "too many projects found, can't auto decide use which one"
 			panic(model.NewCmdError(cmd, msg))
 		}
-		return projects[0].ID
+		return projects[0].Id
 	}
 	return env.GetUint64(EnvKeyProject)
 }
 
-func printCluster(env *model.Env, screen model.Screen, cluster *LegacyGetClusterResp) {
+func legacyPrintCluster(env *model.Env, screen model.Screen, cluster *LegacyGetClusterResp) {
 	prefix := "  "
-	screen.Print(display.ColorHighLight(fmt.Sprintf("ID: %v\n", cluster.ID), env))
+	screen.Print(display.ColorHighLight(fmt.Sprintf("Id: %v\n", cluster.Id), env))
 	printProp(env, screen, prefix, "Name", cluster.Name)
-	printProp(env, screen, prefix, "ProjectID", cluster.ProjectID)
+	printProp(env, screen, prefix, "ProjectId", cluster.ProjectId)
 	printProp(env, screen, prefix, "ClusterType", cluster.ClusterType)
 	printProp(env, screen, prefix, "CloudProvider", cluster.CloudProvider)
 	printProp(env, screen, prefix, "Region", cluster.Region)
@@ -260,11 +260,39 @@ func printCluster(env *model.Env, screen model.Screen, cluster *LegacyGetCluster
 	printProp(env, screen, prefix, "Status.ConnectionStrings.VpcPeering.Port", cluster.Status.ConnectionStrings.VpcPeering.Port)
 }
 
+func v1beta1PrintCluster(env *model.Env, screen model.Screen, cluster *V1Beta1Cluster) {
+	prefix := "  "
+	screen.Print(display.ColorHighLight(fmt.Sprintf("ClusterId: %v\n", cluster.ClusterId), env))
+	printProp(env, screen, prefix, "DisplayName", cluster.DisplayName)
+	printProp(env, screen, prefix, "Name", cluster.Name)
+	printProp(env, screen, prefix, "Version", cluster.Version)
+	printProp(env, screen, prefix, "CreatedBy", cluster.CreatedBy)
+	printProp(env, screen, prefix, "UserPrefix", cluster.UserPrefix)
+	printProp(env, screen, prefix, "State", cluster.State)
+	printProp(env, screen, prefix, "CreateTime", cluster.CreateTime.Format(TimeFormat))
+	printProp(env, screen, prefix, "UpdateTime", cluster.UpdateTime.Format(TimeFormat))
+	printProp(env, screen, prefix, "EncryptionConfig.EnhancedEncryptionEnabled", cluster.EncryptionConfig.EnhancedEncryptionEnabled)
+	printProp(env, screen, prefix, "Region.DisplayName", cluster.Region.DisplayName)
+	printProp(env, screen, prefix, "Region.Name", cluster.Region.Name)
+	printProp(env, screen, prefix, "Region.CloudProvider", cluster.Region.CloudProvider)
+	printProp(env, screen, prefix, "Region.RegionId", cluster.Region.RegionId)
+	if cluster.Labels != nil {
+		for k, v := range cluster.Labels {
+			printProp(env, screen, prefix, "Labels."+k, v)
+		}
+	}
+	if cluster.Annotations != nil {
+		for k, v := range cluster.Annotations {
+			printProp(env, screen, prefix, "Labels."+k, v)
+		}
+	}
+}
+
 func printProject(env *model.Env, screen model.Screen, project *LegacyProject) {
 	prefix := "  "
-	screen.Print(display.ColorHighLight(fmt.Sprintf("ID: %v\n", project.ID), env))
+	screen.Print(display.ColorHighLight(fmt.Sprintf("Id: %v\n", project.Id), env))
 	printProp(env, screen, prefix, "Name", project.Name)
-	printProp(env, screen, prefix, "OrgID", project.OrgID)
+	printProp(env, screen, prefix, "OrgId", project.OrgId)
 	printProp(env, screen, prefix, "ClusterCount", project.ClusterCount)
 	printProp(env, screen, prefix, "UserCount", project.UserCount)
 	printProp(env, screen, prefix, "CreateTimestamp", project.CreateTimestamp)
@@ -282,3 +310,5 @@ func printProp(env *model.Env, screen model.Screen, prefix string, name string, 
 	}
 	screen.Print(prefix + display.ColorArg(name, env) + sep + valStr)
 }
+
+const TimeFormat = "2006-01-02 15:04:05"

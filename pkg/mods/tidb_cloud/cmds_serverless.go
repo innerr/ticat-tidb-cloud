@@ -28,9 +28,9 @@ func V1Beta1ClusterServerlessCreate(
 	if cc.Screen.OutputtedLines() > 0 {
 		cc.Screen.Print("\n")
 	}
-	sep := display.ColorProp(":", env)
-	cc.Screen.Print(fmt.Sprintf("%s%s %v\n", display.ColorArg("ID", env), sep, cluster.ClusterID))
-	env.GetLayer(model.EnvLayerSession).Set(EnvKeyClusterId, cluster.ClusterID)
+	v1beta1PrintCluster(env, cc.Screen, cluster)
+	//V1Beta1ChangeRootPassword(host, client, cluster.ClusterId, rootPwd, cmd)
+	env.GetLayer(model.EnvLayerSession).Set(EnvKeyClusterId, cluster.ClusterId)
 	env.GetLayer(model.EnvLayerSession).Set("mysql.pwd", rootPwd)
 	return currCmdIdx, true
 }
@@ -57,11 +57,11 @@ func LegecyClusterServerlessCreate(
 		cc.Screen.Print("\n")
 	}
 	sep := display.ColorProp(":", env)
-	cc.Screen.Print(fmt.Sprintf("%s%s %v\n", display.ColorArg("ID", env), sep, cluster.ClusterID))
+	cc.Screen.Print(fmt.Sprintf("%s%s %v\n", display.ColorArg("Id", env), sep, cluster.ClusterId))
 	if len(cluster.Message) != 0 {
 		cc.Screen.Print(display.ColorExplain(cluster.Message, env))
 	}
-	env.GetLayer(model.EnvLayerSession).SetUint64(EnvKeyClusterId, cluster.ClusterID)
+	env.GetLayer(model.EnvLayerSession).SetUint64(EnvKeyClusterId, cluster.ClusterId)
 	env.GetLayer(model.EnvLayerSession).Set("mysql.pwd", rootPwd)
 	return currCmdIdx, true
 }

@@ -90,7 +90,7 @@ func RegisterCmds(cmds *model.CmdTree) {
 	clusterWait := clusters.AddSub("wait-status", "wait").
 		RegPowerCmd(ClusterWait,
 			"wait for cluster to become the specify status (default: AVAILABLE)").
-		AddArg("interval-secs", "2", "interval", "interv").
+		AddArg("interval-secs", "3", "interval", "interv").
 		AddArg("timeout-secs", "3600", "timeout").
 		AddArg("status", "AVAILABLE", "s").
 		AddEnvOp("mysql.host", model.EnvOpTypeWrite).
@@ -179,7 +179,7 @@ func RegisterCmds(cmds *model.CmdTree) {
 		AddArg("tikv-node-size", "2C4G", "tikv-size", "tikv", "kv").
 		AddArg("tikv-node-count", "3", "tikv-count", "tikv-cnt", "kv-cnt").
 		AddArg("tikv-storage-gb", "10", "tikv-storage", "tikv-gb", "tikv-stg", "kv-stg", "stg-gb", "stg", "gb").
-		AddArg("cidr", "172.16.0.0/21").
+		AddArg("access-ip-list", "0.0.0.0/0", "access-cidr", "access-ip", "access").
 		AddEnvOp(EnvKeyClusterName, model.EnvOpTypeRead).
 		AddEnvOp(EnvKeyRootPwd, model.EnvOpTypeRead).
 		AddEnvOp(EnvKeyCloudProvider, model.EnvOpTypeRead).

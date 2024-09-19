@@ -58,22 +58,22 @@ func ClusterDedicatedCreate(
 	tikvNodeSize := argv.GetRaw("tikv-node-size")
 	tikvNodeCnt := argv.GetInt("tikv-node-count")
 	tikvStgGb := argv.GetInt("tikv-storage-gb")
-	cidr := argv.GetRaw("cidr")
+	accessCidr := argv.GetRaw("access-ip-list")
 	cmd := flow.Cmds[currCmdIdx]
 
 	project := getProject(host, client, env, cc.Screen, cmd)
 	cluster := LegacyCreateDedicatedCluster(host, client, project, name, rootPwd, cloudProvider, region,
-		tidbNodeSize, tidbNodeCnt, tikvNodeSize, tikvNodeCnt, tikvStgGb, cidr, cmd)
+		tidbNodeSize, tidbNodeCnt, tikvNodeSize, tikvNodeCnt, tikvStgGb, accessCidr, cmd)
 
 	if cc.Screen.OutputtedLines() > 0 {
 		cc.Screen.Print("\n")
 	}
 	sep := display.ColorProp(":", env)
-	cc.Screen.Print(fmt.Sprintf("%s%s %v\n", display.ColorArg("ID", env), sep, cluster.ClusterID))
+	cc.Screen.Print(fmt.Sprintf("%s%s %v\n", display.ColorArg("Id", env), sep, cluster.ClusterId))
 	if len(cluster.Message) != 0 {
 		cc.Screen.Print(display.ColorExplain(cluster.Message, env))
 	}
-	env.GetLayer(model.EnvLayerSession).SetUint64(EnvKeyClusterId, cluster.ClusterID)
+	env.GetLayer(model.EnvLayerSession).SetUint64(EnvKeyClusterId, cluster.ClusterId)
 	env.GetLayer(model.EnvLayerSession).Set("mysql.pwd", rootPwd)
 	return currCmdIdx, true
 }
