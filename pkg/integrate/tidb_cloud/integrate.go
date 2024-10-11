@@ -7,7 +7,11 @@ import (
 
 func Integrate(ticat *ticat.TiCat) {
 	ticat.AddIntegratedModVersion("tidb-cloud 1.0")
+
 	ticat.AddInitRepo("ticat-mods/tidb.cloud")
 	ticat.AddInitRepo("ticat-mods/tidb.bench")
+
 	tidb_cloud.RegisterCmds(ticat.Cmds)
+
+	//ticat.InjectBootstrap("init.tidb-cloud.replace")
 }

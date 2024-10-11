@@ -189,7 +189,42 @@ func RegisterCmds(cmds *model.CmdTree) {
 		AddEnvOp("mysql.pwd", model.EnvOpTypeWrite)
 	addAuthArgs(dedicatedCreate)
 	addApiAddrArgLegacy(dedicatedCreate)
+
+	cmds.GetOrAddSub("init", "tidb-cloud", "replace").RegPowerCmd(
+		IntegrationReplaceCmds, "tidb-cloud integration: replace some cmds")
 }
+
+/*
+bench.add-tags
+bench.record.tags
+bench.record
+
+bench.result
+bench.result.clear
+
+--
+
+bench.result.list
+bench.result.show
+
+bench.record.config
+bench.record.jitter
+bench.record.usage
+
+bench.result.tag.add
+bench.result.tag.all
+bench.result.tag.remove
+
+bench.result.last
+bench.result.last.aggregate
+bench.result.select-result
+bench.result.select-result.last
+
+bench.result.info
+bench.result.monitor-links
+bench.result.tiup-yaml
+bench.result.dashboard
+*/
 
 const (
 	EnvKeyPubKey         = "tidb-cloud.auth.public-key"
