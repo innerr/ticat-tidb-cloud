@@ -5,5 +5,5 @@ go 1.16
 require (
 	github.com/go-resty/resty/v2 v2.14.0
 	github.com/icholy/digest v0.1.23
-	github.com/innerr/ticat v1.4.1-0.20240919101016-8395f3284941
+	github.com/innerr/ticat v1.4.1-0.20240924032146-b8ce8443da49
 )
