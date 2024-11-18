@@ -120,6 +120,8 @@ func RegisterCmds(cmds *model.CmdTree) {
 		AddArg2Env(EnvKeyCloudProvider, "cloud-provider").
 		AddArg("cloud-region", "us-east-1", "region").
 		AddArg2Env(EnvKeyCloudRegion, "cloud-region").
+		AddArg("spending-limit-monthly-us-cents", "-1", "spending-limit", "spend-limit", "limit").
+		AddArg2Env(EnvKeySpendLimit, "spending-limit-monthly-us-cents").
 		AddEnvOp(EnvKeyClusterName, model.EnvOpTypeRead).
 		AddEnvOp(EnvKeyRootPwd, model.EnvOpTypeRead).
 		AddEnvOp(EnvKeyCloudProvider, model.EnvOpTypeRead).
@@ -237,4 +239,5 @@ const (
 	EnvKeyCloudRegion    = "tidb-cloud.provider.region"
 	EnvKeyProject        = "tidb-cloud.project"
 	EnvKeyClusterId      = "tidb-cloud.cluster.id"
+	EnvKeySpendLimit     = "tidb-cloud.cluster.serverless.spend-limit"
 )
