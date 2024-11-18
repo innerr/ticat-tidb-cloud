@@ -19,12 +19,17 @@ type V1Beta1Endpoints struct {
 	Public bool `json:"public"`
 }
 
+type V1Beta1SpendingLimit struct {
+	Monthly int32 `json:"monthly"`
+}
+
 type V1Beta1CreateClusterReq struct {
-	DisplayName  string            `json:"displayName"`
-	Region       V1Beta1Region     `json:"region"`
-	RootPassword string            `json:"rootPassword"`
-	Endpoints    V1Beta1Endpoints  `json:"endpoint"`
-	Labels       map[string]string `json:"labels"`
+	DisplayName   string                `json:"displayName"`
+	Region        V1Beta1Region         `json:"region"`
+	RootPassword  string                `json:"rootPassword"`
+	Endpoints     V1Beta1Endpoints      `json:"endpoint"`
+	Labels        map[string]string     `json:"labels"`
+	SpendingLimit *V1Beta1SpendingLimit `json:"spendingLimit,omitempty"`
 }
 
 type V1Beta1EncryptionConfig struct {
@@ -55,6 +60,7 @@ func V1Beta1CreateDevCluster(
 	rootPwd string,
 	cloudProvider string,
 	cloudRegion string,
+	limitMonthlyUSCents int,
 	cmd model.ParsedCmd) *V1Beta1Cluster {
 
 	cloudProvider = strings.ToLower(cloudProvider)
@@ -72,6 +78,11 @@ func V1Beta1CreateDevCluster(
 		Labels: map[string]string{
 			"tidb.cloud/project": fmt.Sprintf("%v", projectId),
 		},
+	}
+	if limitMonthlyUSCents > 0 {
+		payload.SpendingLimit = &V1Beta1SpendingLimit{
+			Monthly: int32(limitMonthlyUSCents),
+		}
 	}
 	url := fmt.Sprintf("%s/v1beta1/clusters", host)
 	var result V1Beta1Cluster

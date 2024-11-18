@@ -20,10 +20,12 @@ func V1Beta1ClusterServerlessCreate(
 	rootPwd := env.GetRaw(EnvKeyRootPwd)
 	cloudProvider := env.GetRaw(EnvKeyCloudProvider)
 	region := env.GetRaw(EnvKeyCloudRegion)
+	limitMonthlyUSCents := env.GetInt(EnvKeySpendLimit)
 	cmd := flow.Cmds[currCmdIdx]
 
 	project := getProject(host, client, env, cc.Screen, cmd)
-	cluster := V1Beta1CreateDevCluster(host, client, project, name, rootPwd, cloudProvider, region, cmd)
+	cluster := V1Beta1CreateDevCluster(host, client, project, name, rootPwd,
+		cloudProvider, region, limitMonthlyUSCents, cmd)
 
 	if cc.Screen.OutputtedLines() > 0 {
 		cc.Screen.Print("\n")
